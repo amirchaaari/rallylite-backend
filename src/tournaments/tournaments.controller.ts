@@ -20,6 +20,15 @@ export class TournamentsController {
     return this.tournamentsService.getAllTournaments(filters);
   }
 
+
+  
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/delete')
+  async deleteTournament(@Param('id') tournamentId: string, @Req() req: any) {
+    return this.tournamentsService.deleteTournament(tournamentId, req.user.userId);
+  }
+
   @UseGuards(JwtAuthGuard)
   @Post(':id/join')
   async joinTournament(@Param('id') tournamentId: string, @Req() req: any) {

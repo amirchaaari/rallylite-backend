@@ -21,4 +21,8 @@ export class UsersService {
   async findById(id: string): Promise<UserDocument | null> {
     return this.userModel.findById(id).exec();
   }
+//   async findById(id: string) {
+//   return this.userModel.findById(id).select('-password'); // exclude password
+// }
+
 }

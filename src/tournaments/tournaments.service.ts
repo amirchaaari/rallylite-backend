@@ -30,8 +30,22 @@ export class TournamentsService {
       query.date = { $gte: start, $lt: end };
     }
 
-    return this.tournamentModel.find(query).populate('players', 'name email').exec();
+    return this.tournamentModel.find(query)  .find(query)
+      .populate('players', 'name email level photoUrl')
+      .populate('createdBy', 'name _id level photoUrl')
+      .exec();
   }
+
+  async deleteTournament(tournamentId: string, userId: string) {
+    const tournament = await this.tournamentModel.findById(tournamentId);
+    if (!tournament) throw new NotFoundException('Tournament not found');
+    if (tournament.createdBy.toString() !== userId) {
+      throw new BadRequestException('You are not authorized to delete this tournament');
+    }
+    await this.tournamentModel.deleteOne({ _id: tournamentId });
+    return { message: 'Tournament deleted successfully' };
+  }
+
 
   async joinTournament(tournamentId: string, userId: string) {
     const tournament = await this.tournamentModel.findById(tournamentId);

@@ -18,6 +18,9 @@ export class Tournament {
   @Prop({ required: true })
   date: Date;
 
+  @Prop({ required: true })
+  level: 'Beginner' | 'Intermediate' | 'Advanced';
+
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   createdBy: Types.ObjectId;
 

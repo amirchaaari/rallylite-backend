@@ -20,10 +20,29 @@ export class MatchesController {
     return this.matchesService.getAllMatches(filters);
   }
 
+  // Send a join request (instead of joining directly)
   @UseGuards(JwtAuthGuard)
   @Post(':id/join')
-  async joinMatch(@Param('id') matchId: string, @Req() req: any) {
-    return this.matchesService.joinMatch(matchId, req.user.userId);
+  async requestToJoin(@Param('id') matchId: string, @Req() req: any) {
+    return this.matchesService.requestToJoin(matchId, req.user.userId);
+  }
+  //delete match
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/delete')
+  async deleteMatch(@Param('id') matchId: string, @Req() req:
+  any) {
+    return this.matchesService.deleteMatch(matchId, req.user.userId);
+  } 
+
+  // Accept a join request
+  @UseGuards(JwtAuthGuard)
+  @Post(':matchId/accept/:playerId')
+  async acceptJoinRequest(
+    @Param('matchId') matchId: string,
+    @Param('playerId') playerId: string,
+    @Req() req: any,
+  ) {
+    return this.matchesService.acceptJoinRequest(matchId, playerId, req.user.userId);
   }
 
   @UseGuards(JwtAuthGuard)

@@ -16,12 +16,20 @@ export class AuthService {
     return null;
   }
 
-  async login(user: any) {
-    const payload = { email: user.email, sub: user._id, roles: user.roles };
-    return {
-      access_token: this.jwtService.sign(payload),
-    };
-  }
+async login(user: any) {
+  const payload = { email: user.email, sub: user._id, roles: user.roles };
+
+  return {
+    access_token: this.jwtService.sign(payload),
+    user: {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      roles: user.roles,
+      photoUrl: user.photoUrl || null,
+    },
+  };
+}
 
   async register(data: any) {
     const existing = await this.usersService.findByEmail(data.email);
@@ -29,4 +37,5 @@ export class AuthService {
     const hashed = await bcrypt.hash(data.password, 10);
     return this.usersService.create({ ...data, password: hashed });
   }
+
 }

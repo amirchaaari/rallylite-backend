@@ -12,8 +12,7 @@ export class Match {
   @Prop({ required: true })
   date: Date;
 
-
-    @Prop({ required: true })
+  @Prop({ required: true })
   level: string;
 
   @Prop({ required: true })
@@ -27,6 +26,10 @@ export class Match {
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   createdBy: Types.ObjectId;
+
+  // 👇 New field for join requests
+  @Prop({ type: [Types.ObjectId], ref: 'User', default: [] })
+  joinRequests: Types.ObjectId[];
 }
 
 export type MatchDocument = Match & Document;

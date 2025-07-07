@@ -2,11 +2,15 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Match, MatchDocument } from './schemas/match.schema';
+import { NotificationsGateway } from './notifications.gateway'; // 👈 Add this
 
 @Injectable()
 export class MatchesService {
   constructor(
-    @InjectModel(Match.name) private matchModel: Model<MatchDocument>
+    @InjectModel(Match.name) private matchModel: Model<MatchDocument>,
+        private readonly notificationsGateway: NotificationsGateway // 👈 Inject
+
+    
   ) {}
 
   async createMatch(data: any, userId: string) {
@@ -30,31 +34,96 @@ export class MatchesService {
       query.date = { $gte: start, $lt: end };
     }
 
-    return this.matchModel.find(query).populate('players', 'name email level photoUrl').populate('createdBy', 'name _id level photoUrl').exec();
+    return this.matchModel
+      .find(query)
+      .populate('players', 'name email level photoUrl')
+      .populate('createdBy', 'name _id level photoUrl')
+      .populate('joinRequests', 'name email level photoUrl')
+      .exec();
   }
 
-  async joinMatch(matchId: string, userId: string) {
-    const match = await this.matchModel.findById(matchId);
+async requestToJoin(matchId: string, userId: string) {
+  const match = await this.matchModel
+    .findById(matchId)
+    .populate('createdBy', 'name email level photoUrl') // 👈 Add this
+    .exec();
 
+  if (!match) throw new NotFoundException('Match not found');
+
+  const userObjectId = new Types.ObjectId(userId);
+
+  if (match.players.includes(userObjectId))
+    throw new BadRequestException('Already a player in this match');
+
+  if (match.joinRequests.includes(userObjectId))
+    throw new BadRequestException('Join request already sent');
+
+  match.joinRequests.push(userObjectId);
+  await match.save();
+
+  // Notify the host (createdBy)
+  this.notificationsGateway.sendJoinRequestNotification(
+    match.createdBy._id.toString(), // emit to host's room
+    {
+      matchId: match._id,
+      location: match.location,
+      sport: match.sport,
+      date: match.date,
+      requester: {
+        _id: userId,
+        // The frontend can fetch user profile or include it here if available
+      },
+    }
+  );
+
+  return match;
+}
+
+
+  async acceptJoinRequest(matchId: string, playerId: string, currentUserId: string) {
+    const match = await this.matchModel.findById(matchId);
     if (!match) throw new NotFoundException('Match not found');
 
-    const userObjectId = new Types.ObjectId(userId);
+    if (match.createdBy.toString() !== currentUserId)
+      throw new BadRequestException('Only the match creator can accept requests');
 
-    if (match.players.some(p => p.toString() === userId)) {
-      throw new BadRequestException('You already joined this match');
-    }
+    const playerObjectId = new Types.ObjectId(playerId);
 
-    if (match.players.length >= match.maxPlayers) {
+    if (!match.joinRequests.includes(playerObjectId))
+      throw new BadRequestException('No join request from this user');
+
+    if (match.players.includes(playerObjectId))
+      throw new BadRequestException('User already joined');
+
+    if (match.players.length >= match.maxPlayers)
       throw new BadRequestException('Match is full');
-    }
 
-    match.players.push(userObjectId);
+    // Add to players and remove from requests
+    match.players.push(playerObjectId);
+    match.joinRequests = match.joinRequests.filter(
+      (id) => id.toString() !== playerId
+    );
+
     return match.save();
+  }
+  
+  //delete match
+  async deleteMatch(matchId: string, userId: string) {
+    const match = await this.matchModel.findById(matchId);
+    if (!match) throw new NotFoundException('Match not found');
+    if (match.createdBy.toString() !== userId)
+      throw new BadRequestException('Only the match creator can delete it');
+    await this.matchModel.deleteOne
+({ _id: matchId });
+    return { message: 'Match deleted successfully' };
   }
 
   async getUserMatches(userId: string) {
-    return this.matchModel.find({
-      players: new Types.ObjectId(userId),
-    });
+    return this.matchModel
+      .find({ players: new Types.ObjectId(userId) })
+      .populate('players', 'name email level photoUrl')
+      .populate('createdBy', 'name _id level photoUrl')
+      .populate('joinRequests', 'name email level photoUrl')
+      .exec();
   }
 }
