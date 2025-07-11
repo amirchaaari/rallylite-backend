@@ -14,6 +14,8 @@ pipeline {
     stages {
         stage('Checkout Source Code') {
             steps {
+                deleteDir() // clean workspace
+
                 git branch: 'main',
                     credentialsId: "${GHCR_CREDENTIALS_ID}",
                     url: 'https://github.com/amirchaaari/rallylite-backend.git'
