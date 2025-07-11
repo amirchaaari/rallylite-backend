@@ -2,25 +2,22 @@ pipeline {
     agent any
 
     tools {
-        nodejs 'NodeJS' // Make sure NodeJS is installed in Jenkins tools
+        nodejs 'NodeJS' // Make sure this is configured in Jenkins Tools
     }
 
     environment {
-        // GitHub Container Registry (GHCR) config
-        GHCR_IMAGE = 'ghcr.io/amirchaaari/rallylite-backend:latest'
-        GHCR_CREDENTIALS_ID = 'GHCR_PAT' // This should be a Personal Access Token stored in Jenkins credentials
+        GHCR_CREDENTIALS_ID = 'GHCR_PAT'  // GitHub Personal Access Token ID
+        GHCR_REPO = 'ghcr.io/amirchaaari/rallylite-backend'
     }
 
     stages {
-        stage('Checkout Source Code') {
+        stage('Checkout Code') {
             steps {
-                git branch: 'main',
-                    credentialsId: "${GHCR_CREDENTIALS_ID}",
-                    url: 'https://github.com/amirchaaari/rallylite-backend.git'
+                git branch: 'main', credentialsId: "${GHCR_CREDENTIALS_ID}", url: 'https://github.com/amirchaaari/rallylite-backend.git'
             }
         }
 
-        stage('Install Node.js Dependencies') {
+        stage('Install Dependencies') {
             steps {
                 sh 'npm install'
             }
@@ -32,27 +29,20 @@ pipeline {
             }
         }
 
-        stage('Docker Build') {
+        stage('Build Docker Image') {
             steps {
                 script {
-                    // Unset Docker TLS settings if any
-                    sh '''
-                    unset DOCKER_TLS_VERIFY
-                    unset DOCKER_CERT_PATH
-                    unset DOCKER_HOST
-                    docker build -t $GHCR_IMAGE .
-                    '''
+                    dockerImage = docker.build("${GHCR_REPO}:latest")
                 }
             }
         }
 
-        stage('Login to GHCR and Push') {
+        stage('Push Image to GHCR') {
             steps {
-                withCredentials([string(credentialsId: "${GHCR_CREDENTIALS_ID}", variable: 'GHCR_PAT')]) {
-                    sh '''
-                    echo $GHCR_PAT | docker login ghcr.io -u amirchaaari --password-stdin
-                    docker push $GHCR_IMAGE
-                    '''
+                script {
+                    docker.withRegistry('https://ghcr.io', "${GHCR_CREDENTIALS_ID}") {
+                        dockerImage.push('latest')
+                    }
                 }
             }
         }
@@ -60,10 +50,10 @@ pipeline {
 
     post {
         success {
-            echo '✅ Pipeline completed successfully.'
+            echo '✅ Build and push completed successfully!'
         }
         failure {
-            echo '❌ Pipeline failed. Check logs.'
+            echo '❌ Build or push failed. Check the logs.'
         }
     }
 }
