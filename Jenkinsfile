@@ -7,8 +7,8 @@ pipeline {
 
     environment {
         // GitHub Container Registry (GHCR) config
-        GHCR_IMAGE = 'ghcr.io/amirchaaari/rallylite-backend:latest'
-        GHCR_CREDENTIALS_ID = 'GHCR_PAT' // This should be a Personal Access Token stored in Jenkins credentials
+    GHCR_REPO = 'ghcr.io/amirchaaari/rallylite-backend'
+    GHCR_CREDENTIALS_ID = 'ghcr_pat' // name of the Jenkins credential
     }
 
     stages {
