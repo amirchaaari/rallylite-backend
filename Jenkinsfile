@@ -2,19 +2,18 @@ pipeline {
     agent any
 
     tools {
-        nodejs 'NodeJS' // Make sure NodeJS is installed in Jenkins tools
+        nodejs 'NodeJS'
     }
 
     environment {
-        // GitHub Container Registry (GHCR) config
-    GHCR_REPO = 'ghcr.io/amirchaaari/rallylite-backend'
-    GHCR_CREDENTIALS_ID = 'ghcr_pat' // name of the Jenkins credential
+        GHCR_REPO = 'ghcr.io/amirchaaari/rallylite-backend'
+        GHCR_CREDENTIALS_ID = 'ghcr_pat' // username/password credential (GitHub username + PAT)
     }
 
     stages {
         stage('Checkout Source Code') {
             steps {
-                deleteDir() // clean workspace
+                deleteDir()
 
                 git branch: 'main',
                     credentialsId: "${GHCR_CREDENTIALS_ID}",
@@ -42,14 +41,14 @@ pipeline {
             }
         }
 
-
         stage('Login to GHCR and Push') {
             steps {
-                withCredentials([string(credentialsId: "${GHCR_CREDENTIALS_ID}", variable: 'GHCR_PAT')]) {
-                    sh '''
-                    echo $GHCR_PAT | docker login ghcr.io -u amirchaaari --password-stdin
-                    docker push $GHCR_IMAGE
-                    '''
+                withCredentials([usernamePassword(credentialsId: "${GHCR_CREDENTIALS_ID}", usernameVariable: 'GHCR_USER', passwordVariable: 'GHCR_PAT')]) {
+                    script {
+                        sh "echo $GHCR_PAT | docker login ghcr.io -u $GHCR_USER --password-stdin"
+                        dockerImage.push('latest')
+                        sh 'docker logout ghcr.io'
+                    }
                 }
             }
         }
