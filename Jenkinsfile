@@ -32,6 +32,12 @@ pipeline {
                 sh 'npm run test'
             }
         }
+        stage('Build Application') {
+            steps {
+                sh 'npm run build'
+             }
+        }
+
 
         stage('Build Docker Image') {
             steps {
