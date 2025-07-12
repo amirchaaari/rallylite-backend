@@ -7,7 +7,7 @@ pipeline {
 
     environment {
         GHCR_REPO = 'ghcr.io/amirchaaari/rallylite-backend'
-        GHCR_CREDENTIALS_ID = 'ghcr_pat' // username/password credential (GitHub username + PAT)
+        GHCR_CREDENTIALS_ID = 'GHCR_PAT' // username/password credential (GitHub username + PAT)
     }
 
     stages {
