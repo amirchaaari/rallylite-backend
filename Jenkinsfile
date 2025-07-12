@@ -35,6 +35,8 @@ pipeline {
         stage('Build Application') {
             steps {
                 sh 'npm run build'
+                junit 'test-results/*.xml'
+
              }
         }
 
