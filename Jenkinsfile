@@ -73,7 +73,7 @@ pipeline {
     // some block
 }
 
-sh '/var/jenkins_home/bin/kubectl apply -f k8s/'
+sh 'kubectl apply -f k8s/'
 
        				}
     
