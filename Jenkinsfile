@@ -73,10 +73,8 @@ pipeline {
     // some block
 }
 
-sh '''
-  export PATH=/var/jenkins_home/bin:$PATH
-  kubectl apply -f k8s/
-'''
+sh '/var/jenkins_home/bin/kubectl apply -f k8s/'
+
        				}
     
             }
