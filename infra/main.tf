@@ -43,7 +43,6 @@ resource "azurerm_kubernetes_cluster" "aks" {
   }
 
   # Kubernetes version (optional, can use latest)
-  kubernetes_version = "1.29.2"               # 👈 Can be left out to use default/stable
   role_based_access_control_enabled = true
   network_profile {
     network_plugin = "azure"
