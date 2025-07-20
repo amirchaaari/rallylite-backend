@@ -13,7 +13,10 @@ spec:
         app: rallylite-backend
     spec:
       containers:
-      - name: backend
-        image: ghcr.io/amirchaaari/rallylite-backend:latest
-        ports:
-        - containerPort: 3000
+        - name: backend
+          image: ghcr.io/amirchaaari/rallylite-backend:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: MONGO_URI
+              value: "mongodb+srv://amirchaari630:smrG8YWnVJkve8TK@cluster0.1ulxxgm.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
