@@ -41,7 +41,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    dockerImage = docker.build("${GHCR_REPO}:latest")
+               dockerImage = docker.build("${GHCR_REPO}:latest", "--platform linux/amd64 .")
                 }
             }
         }
