@@ -67,8 +67,8 @@ pipeline {
         stage('Deploy to AKS') {
     steps {
         sh '''
-            kubectl apply -f k8s/deployment.yaml
-            kubectl apply -f k8s/service.yaml
+            kubectl apply -f k8s/deployment-backend.yaml
+            kubectl apply -f k8s/service-backend.yaml
         '''
     }
 }
