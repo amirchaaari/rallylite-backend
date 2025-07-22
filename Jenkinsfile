@@ -9,6 +9,7 @@ pipeline {
         GHCR_REPO = 'ghcr.io/amirchaaari/rallylite-backend'
         GHCR_CREDENTIALS_ID = 'GHCR_PAT' // GitHub PAT stored in Jenkins credentials
     }
+  
 
     stages {
         stage('Checkout Source Code') {
@@ -16,7 +17,7 @@ pipeline {
                 deleteDir()
                 git branch: 'main',
                     credentialsId: "${GHCR_CREDENTIALS_ID}",
-                    url: 'https://github.com/amirchaaari/rallylite-backend.git'
+                    url: 'https://github.com/amirchaaari/rallylite-backend.git' // Replace with your repository URL
             }
         }
 
