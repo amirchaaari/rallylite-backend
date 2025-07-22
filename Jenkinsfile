@@ -58,9 +58,11 @@ pipeline {
                 )]) {
                     script {
                         sh '''
-                            echo $GHCR_PAT | docker login ghcr.io -u $GHCR_USER --password-stdin
-                            docker push ghcr.io/amirchaaari/rallylite-backend:latest
-                            docker logout ghcr.io 
+                           echo $GHCR_PAT | docker login ghcr.io -u $GHCR_USER --password-stdin
+                            docker push ${GHCR_REPO}:${IMAGE_TAG}
+                            docker tag ${GHCR_REPO}:${IMAGE_TAG} ${GHCR_REPO}:latest
+                            docker push ${GHCR_REPO}:latest
+                            docker logout ghcr.io
                         '''
                     } //test
                 }
@@ -70,7 +72,8 @@ pipeline {
         stage('Deploy to AKS') {
     steps {
         sh '''
-            kubectl apply -f k8s/deployment-backend.yaml
+            export IMAGE_TAG=${IMAGE_TAG}
+            envsubst < k8s/deployment-backend.yaml | kubectl apply -f -
             kubectl apply -f k8s/service-backend.yaml
         '''
     }
