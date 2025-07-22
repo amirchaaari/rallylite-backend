@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: ghcr.io/amirchaaari/rallylite-backend:latest
+          image: ghcr.io/amirchaaari/rallylite-backend:${IMAGE_TAG}
           imagePullPolicy: Always
 
           ports:
