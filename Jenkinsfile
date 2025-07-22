@@ -62,7 +62,7 @@ pipeline {
                             docker push ghcr.io/amirchaaari/rallylite-backend:latest
                             docker logout ghcr.io 
                         '''
-                    } //test
+                    } 
                 }
             }
         }
