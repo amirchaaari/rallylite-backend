@@ -39,10 +39,12 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+          stage('Build Docker Image') {
             steps {
                 script {
-               dockerImage = docker.build("${GHCR_REPO}:latest", "--platform linux/amd64 .")
+                    def shortCommit = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                    env.IMAGE_TAG = shortCommit
+                    dockerImage = docker.build("${GHCR_REPO}:${IMAGE_TAG}", "--platform linux/amd64 .")
                 }
             }
         }
@@ -58,9 +60,9 @@ pipeline {
                         sh '''
                             echo $GHCR_PAT | docker login ghcr.io -u $GHCR_USER --password-stdin
                             docker push ghcr.io/amirchaaari/rallylite-backend:latest
-                            docker logout ghcr.io
+                            docker logout ghcr.io 
                         '''
-                    }
+                    } //test
                 }
             }
         }
