@@ -3,11 +3,16 @@ pipeline {
 
     tools {
         nodejs 'NodeJS'
+            sonarQubeScanner 'SonarScanner' 
+
     }
 
     environment {
         GHCR_REPO = 'ghcr.io/amirchaaari/rallylite-backend'
         GHCR_CREDENTIALS_ID = 'GHCR_PAT' // GitHub PAT stored in Jenkins credentials
+
+        SONARQUBE_ENV = 'SonarQube' // Must match the Jenkins config name
+    SONAR_PROJECT_KEY = 'rallylite'
     }
   
 
@@ -17,15 +22,28 @@ pipeline {
                 deleteDir()
                 git branch: 'main',
                     credentialsId: "${GHCR_CREDENTIALS_ID}",
-                    url: 'https://github.com/amirchaaari/rallylite-backend.git' // Replace with your repository URL
+                    url: 'https://github.com/amirchaaari/rallylite-backend.git' 
             }
         }
 
-        stage('Install Node.js Dependencies') {
-            steps {
-                sh 'npm install'
-            }
+  stage('Install Node.js Dependencies') {
+    steps {
+        sh 'npm install'
+    }
+}
+
+stage('SonarQube Analysis') {
+    steps {
+        withSonarQubeEnv("${SONARQUBE_ENV}") {
+            sh "npx sonar-scanner \
+                -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                -Dsonar.sources=. \
+                -Dsonar.host.url=$SONAR_HOST_URL \
+                -Dsonar.login=$SONAR_AUTH_TOKEN"
         }
+    }
+}
+
 
         stage('Run Tests') {
             steps {
@@ -86,10 +104,10 @@ pipeline {
 
     post {
         success {
-            echo '✅ Pipeline completed successfully.'
+            echo ' Pipeline completed successfully.'
         }
         failure {
-            echo '❌ Pipeline failed. Check logs.'
+            echo ' Pipeline failed. Check logs.'
         }
     }
 }
