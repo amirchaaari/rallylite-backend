@@ -31,6 +31,14 @@ pipeline {
     }
 }
 
+
+stage('Dependency Audit') {
+    steps {
+        sh 'npm audit --audit-level=high || true'
+    }
+}
+
+
 stage('SonarQube Analysis') {
     steps {
         withSonarQubeEnv("${SONARQUBE_ENV}") {
@@ -42,6 +50,16 @@ stage('SonarQube Analysis') {
         }
     }
 }
+
+
+stage('Quality Gate') {
+    steps {
+        timeout(time: 1, unit: 'MINUTES') {
+            waitForQualityGate abortPipeline: true
+        }
+    }
+}
+
 
 
         stage('Run Tests') {
@@ -65,6 +83,16 @@ stage('SonarQube Analysis') {
                 }
             }
         }
+
+
+
+
+                stage('Security: Trivy Image Scan') {
+    steps {
+            sh 'trivy image --severity CRITICAL,HIGH --exit-code 1 ghcr.io/amirchaaari/rallylite-backend:${IMAGE_TAG}'
+    }
+}
+
 
         stage('Login to GHCR and Push') {
             steps {
