@@ -81,7 +81,7 @@ stage('SonarQube Analysis') {
                 script {
                     def shortCommit = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
                     env.IMAGE_TAG = shortCommit
-                    dockerImage = docker.build("${GHCR_REPO}:${IMAGE_TAG}", "--platform linux/amd64 .")
+dockerImage = docker.build("${GHCR_REPO}:${IMAGE_TAG}", "--no-cache --platform linux/amd64 .")
                 }
             }
         }
