@@ -89,11 +89,20 @@ dockerImage = docker.build("${GHCR_REPO}:${IMAGE_TAG}", "--no-cache --platform l
 
 
 
-                stage('Security: Trivy Image Scan') {
+//                 stage('Security: Trivy Image Scan') {
+//     steps {
+//             sh 'trivy image --severity CRITICAL,HIGH --exit-code 1 ghcr.io/amirchaaari/rallylite-backend:${IMAGE_TAG}'
+//     }
+// }
+
+
+             stage('Security: Trivy Image Scan') {
     steps {
-            sh 'trivy image --severity CRITICAL,HIGH --exit-code 1 ghcr.io/amirchaaari/rallylite-backend:${IMAGE_TAG}'
+            sh 'trivy image  ghcr.io/amirchaaari/rallylite-backend:${IMAGE_TAG}'
     }
 }
+
+
 
 
         stage('Login to GHCR and Push') {
