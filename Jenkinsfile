@@ -83,15 +83,18 @@ pipeline {
             }
         }
 
-        stage('Snyk Scan (Dependencies + Container)') {
-            steps {
-                sh '''
+ stage('Snyk Scan (Dependencies + Container)') {
+    steps {
+        withCredentials([string(credentialsId: 'snyktoken', variable: 'SNYK_TOKEN')]) {
+            sh '''
                 snyk auth $SNYK_TOKEN || true
                 snyk test || true
                 snyk container test ${GHCR_REPO}:${IMAGE_TAG} || true
-                '''
-            }
+            '''
         }
+    }
+}
+
 
         stage('Push Docker Image to GHCR') {
             steps {
