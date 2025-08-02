@@ -103,7 +103,7 @@ pipeline {
 
 stage('Snyk Scan') {
     steps {
-        withEnv(["SNYK_TOKEN=${SNYK_TOKEN}"]) {
+        withCredentials([string(credentialsId: 'snyktoken', variable: 'SNYK_TOKEN')]) {
             sh '''
             docker run --rm \
               -v $(pwd):/project \
@@ -119,6 +119,7 @@ stage('Snyk Scan') {
         }
     }
 }
+
 
 
 
