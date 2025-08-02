@@ -109,16 +109,17 @@ stage('Snyk Scan') {
               -v $(pwd):/project \
               -w /project \
               -e SNYK_TOKEN=$SNYK_TOKEN \
-              snyk/snyk-cli snyk test || true
+              snyk/snyk:linux snyk test || true
 
             docker run --rm \
               -v /var/run/docker.sock:/var/run/docker.sock \
               -e SNYK_TOKEN=$SNYK_TOKEN \
-              snyk/snyk-cli snyk container test ${GHCR_REPO}:${IMAGE_TAG} || true
+              snyk/snyk:linux snyk container test ${GHCR_REPO}:${IMAGE_TAG} || true
             '''
         }
     }
 }
+
 
 
 
