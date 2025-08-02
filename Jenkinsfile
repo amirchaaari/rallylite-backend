@@ -29,11 +29,12 @@ pipeline {
             }
         }
 
-        stage('Secrets Scan (Gitleaks)') {
-            steps {
-                sh 'gitleaks detect --source . --exit-code 1 || true'
-            }
-        }
+ stage('Secrets Scan (Gitleaks)') {
+    steps {
+        sh 'gitleaks detect --source . --verbose'
+    }
+}
+
 
         stage('Static Code Analysis (SonarQube)') {
             steps {
@@ -83,17 +84,40 @@ pipeline {
             }
         }
 
- stage('Snyk Scan (Dependencies + Container)') {
+//  stage('Snyk Scan (Dependencies + Container)') {
+//     steps {
+//         withCredentials([string(credentialsId: 'snyktoken', variable: 'SNYK_TOKEN')]) {
+//             sh '''
+//                 snyk auth $SNYK_TOKEN || true
+//                 snyk test || true
+//                 snyk container test ${GHCR_REPO}:${IMAGE_TAG} || true
+//             '''
+//         }
+//     }
+// }
+
+
+
+
+stage('Snyk Scan') {
     steps {
-        withCredentials([string(credentialsId: 'snyktoken', variable: 'SNYK_TOKEN')]) {
+        withEnv(["SNYK_TOKEN=${SNYK_TOKEN}"]) {
             sh '''
-                snyk auth $SNYK_TOKEN || true
-                snyk test || true
-                snyk container test ${GHCR_REPO}:${IMAGE_TAG} || true
+            docker run --rm \
+              -v $(pwd):/project \
+              -w /project \
+              -e SNYK_TOKEN=$SNYK_TOKEN \
+              snyk/snyk-cli snyk test || true
+
+            docker run --rm \
+              -v /var/run/docker.sock:/var/run/docker.sock \
+              -e SNYK_TOKEN=$SNYK_TOKEN \
+              snyk/snyk-cli snyk container test ${GHCR_REPO}:${IMAGE_TAG} || true
             '''
         }
     }
 }
+
 
 
         stage('Push Docker Image to GHCR') {
